@@ -115,9 +115,11 @@ function InputView({ onGenerated }) {
       }
       const result = await res.json();
       setProgress(72); setProgressMsg('Rendering graphics...');
-      const posts = (result.posts || []).map(p => ({
-        ...p, graphicDataUrl: renderGraphic(p)
-      }));
+      const posts = await Promise.all(
+        (result.posts || []).map(async p => ({
+          ...p, graphicDataUrl: await renderGraphic(p)
+        }))
+      );
       setProgress(100); setProgressMsg('Done!');
       await new Promise(r => setTimeout(r, 300));
       onGenerated(posts);
@@ -504,7 +506,7 @@ export default function ContentOS() {
     try { localStorage.setItem(CAL_KEY, JSON.stringify(cal)); } catch {}
   }
 
-  function handleGenerated(posts) {
+  async function handleGenerated(posts) {
     // Merge into calendar
     const merged = [...calendar];
     posts.forEach(p => {
